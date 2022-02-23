@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/pickflixx/static/css/main.da294653.css",
+    "main.js": "/pickflixx/static/js/main.420b8f89.js",
+    "index.html": "/pickflixx/index.html",
+    "main.da294653.css.map": "/pickflixx/static/css/main.da294653.css.map",
+    "main.420b8f89.js.map": "/pickflixx/static/js/main.420b8f89.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.da294653.css",
+    "static/js/main.420b8f89.js"
+  ]
+}
