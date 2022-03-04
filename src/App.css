@@ -1,0 +1,14 @@
+body {
+  font-family: "Source Sans Pro", sans-serif;
+  padding: 0;
+  margin: 0;
+  background-color: #000022;
+}
+
+/*   */
+
+*,
+*:before,
+*:after {
+  box-sizing: border-box;
+}
