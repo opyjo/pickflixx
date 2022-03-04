@@ -19,7 +19,7 @@ const App = () => {
 
   return (
     <GlobalProvider>
-      <Router basename={window.location.pathname.replace(/(\/[^/]+)$/, "")}>
+      <Router basename={process.env.PUBLIC_URL}>
         <Header />
         <Routes>
           <Route
