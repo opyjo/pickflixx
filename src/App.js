@@ -19,7 +19,7 @@ const App = () => {
 
   return (
     <GlobalProvider>
-      <Router basename={process.env.PUBLIC_URL}>
+      <Router >
         <Header />
         <Routes>
           <Route
