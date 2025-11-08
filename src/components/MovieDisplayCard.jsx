@@ -6,18 +6,27 @@ import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Play, Plus, Check, Star } from "lucide-react";
 
-const IMGPATH = "https://image.tmdb.org/t/p/w1280";
+const IMGPATH = "https://image.tmdb.org/t/p/w500";
 
 const MovieDisplayCard = ({ movie, onMovieSelect }) => {
   const navigate = useNavigate();
+
+  const {
+    addMovieToWatchList,
+    addMovieToWatched,
+    watchList,
+    watched,
+    fetchMovieDetails,
+  } = useContext(GlobalContext);
 
   const handleSelectMovie = () => {
     onMovieSelect(movie);
     navigate("/summary");
   };
 
-  const { addMovieToWatchList, addMovieToWatched, watchList, watched } =
-    useContext(GlobalContext);
+  const handleOpenDetails = () => {
+    fetchMovieDetails(movie.id);
+  };
 
   const storedMovie = watchList.find((element) => element.id === movie.id);
   const storedMovieWatched = watched.find((mov) => mov.id === movie.id);
@@ -30,14 +39,15 @@ const MovieDisplayCard = ({ movie, onMovieSelect }) => {
   const watchedDisabled = storedMovieWatched ? true : false;
 
   return (
-    <Card className="group overflow-hidden">
-      <div className="relative overflow-hidden">
+    <Card className="overflow-hidden">
+      <div className="relative overflow-hidden bg-muted">
         <img
           src={IMGPATH + movie.poster_path}
           alt={movie.original_title}
-          className="w-full h-[300px] object-cover transition-transform duration-300 group-hover:scale-105"
+          className="w-full h-[320px] object-cover"
+          loading="lazy"
+          style={{ imageRendering: '-webkit-optimize-contrast' }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/70 backdrop-blur-sm px-2 py-1 rounded-md">
           <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />
           <span className="text-xs font-semibold text-white">
@@ -67,6 +77,14 @@ const MovieDisplayCard = ({ movie, onMovieSelect }) => {
         >
           <Play className="h-4 w-4" />
           Watch Trailer
+        </Button>
+        <Button
+          variant="secondary"
+          className="w-full"
+          onClick={handleOpenDetails}
+          size="sm"
+        >
+          More details
         </Button>
 
         <div className="flex gap-2 w-full">

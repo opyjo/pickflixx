@@ -1,76 +1,186 @@
+import React, { useContext, useEffect, useMemo, useState } from "react";
+import PropTypes from "prop-types";
 import axios from "axios";
-import React, { Component } from "react";
+import { Calendar, Star, Play, Trash2 } from "lucide-react";
 import YoutubeVideo from "./YoutubeVideo";
 import { Badge } from "./ui/badge";
-import { Calendar, Star, Play } from "lucide-react";
+import { Button } from "./ui/button";
+import { GlobalContext } from "../context/GlobalState";
+import { TMDB_API_BASE_URL, TMDB_API_KEY } from "../lib/tmdb";
 
-const IMGPATH = "https://image.tmdb.org/t/p/w1280";
+const formatTimeLabel = (seconds) => {
+  if (!Number.isFinite(seconds) || seconds <= 0) {
+    return "0:00";
+  }
+  const roundedSeconds = Math.floor(seconds);
+  const minutes = Math.floor(roundedSeconds / 60);
+  const remainingSeconds = roundedSeconds % 60;
+  return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+};
 
-class MovieSummary extends Component {
-  state = { video: [] };
+const MovieSummary = ({ selectedMovie }) => {
+  const [videoKey, setVideoKey] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const { resumeProgress, clearResumeProgress } = useContext(GlobalContext);
 
-  componentDidMount() {
-    const search = async () => {
-      const response = await axios.get(
-        `https://api.themoviedb.org/3/movie/${this.props.selectedMovie.id}/videos?`,
-        {
-          params: {
-            api_key: "cdec2f2873bb826dad1cc5da665e4326",
-          },
+  const resumeEntry = useMemo(() => {
+    if (!selectedMovie?.id) {
+      return null;
+    }
+    return resumeProgress?.[selectedMovie.id] ?? null;
+  }, [resumeProgress, selectedMovie?.id]);
+
+  useEffect(() => {
+    if (!selectedMovie?.id) {
+      return;
+    }
+
+    let isCancelled = false;
+
+    const fetchVideo = async () => {
+      setLoading(true);
+      setError(null);
+      setVideoKey("");
+
+      try {
+        const response = await axios.get(
+          `${TMDB_API_BASE_URL}/movie/${selectedMovie.id}/videos`,
+          {
+            params: {
+              api_key: TMDB_API_KEY,
+            },
+          }
+        );
+
+        if (isCancelled) {
+          return;
         }
-      );
-      const videoResponse = response.data.results;
-      if (videoResponse.length > 0) {
-        this.setState({ video: videoResponse[0] });
+
+        const results = response.data?.results ?? [];
+        const youtubeTrailer =
+          results.find(
+            (video) =>
+              video.site === "YouTube" && video.type === "Trailer"
+          ) ??
+          results.find((video) => video.site === "YouTube");
+
+        setVideoKey(youtubeTrailer?.key ?? "");
+      } catch (fetchError) {
+        if (!isCancelled) {
+          setError(
+            fetchError?.response?.data?.status_message ??
+              fetchError?.message ??
+              "Unable to load trailer."
+          );
+        }
+      } finally {
+        if (!isCancelled) {
+          setLoading(false);
+        }
       }
     };
-    search();
-  }
 
-  render() {
-    const { selectedMovie } = this.props;
+    fetchVideo();
 
+    return () => {
+      isCancelled = true;
+    };
+  }, [selectedMovie?.id]);
+
+  if (!selectedMovie) {
     return (
-      <div className="container mx-auto px-4 py-8 max-w-screen-2xl">
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <Play className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold">{selectedMovie.original_title}</h1>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3 mb-4">
-            {selectedMovie.vote_average && (
-              <div className="flex items-center gap-1.5">
-                <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
-                <span className="font-semibold">{selectedMovie.vote_average.toFixed(1)}</span>
-              </div>
-            )}
-            {selectedMovie.release_date && (
-              <div className="flex items-center gap-1.5 text-muted-foreground">
-                <Calendar className="h-4 w-4" />
-                <span>{new Date(selectedMovie.release_date).getFullYear()}</span>
-              </div>
-            )}
-          </div>
-
-          {selectedMovie.overview && (
-            <p className="text-muted-foreground max-w-3xl mb-6">
-              {selectedMovie.overview}
-            </p>
-          )}
-        </div>
-
-        {this.state.video.key ? (
-          <YoutubeVideo videoKey={this.state.video.key} />
-        ) : (
-          <div className="text-center py-16 bg-muted rounded-lg">
-            <Play className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-            <p className="text-muted-foreground">Trailer not available</p>
-          </div>
-        )}
+      <div className="container mx-auto max-w-screen-2xl px-4 py-16 text-center text-muted-foreground">
+        Select a movie to see its trailer and overview.
       </div>
     );
   }
-}
+
+  const handleClearResume = () => {
+    if (selectedMovie?.id) {
+      clearResumeProgress(selectedMovie.id);
+    }
+  };
+
+  return (
+    <div className="container mx-auto max-w-screen-2xl px-4 py-8">
+      <div className="mb-8 space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <Play className="h-8 w-8 text-primary" />
+            <h1 className="text-3xl font-bold">
+              {selectedMovie.original_title ?? selectedMovie.title}
+            </h1>
+          </div>
+          {resumeEntry && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleClearResume}
+            >
+              <Trash2 className="h-4 w-4" />
+              Clear progress
+            </Button>
+          )}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+          {selectedMovie.vote_average ? (
+            <span className="inline-flex items-center gap-1">
+              <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
+              {selectedMovie.vote_average.toFixed(1)} / 10
+            </span>
+          ) : null}
+          {selectedMovie.release_date ? (
+            <span className="inline-flex items-center gap-1">
+              <Calendar className="h-4 w-4" />
+              {new Date(selectedMovie.release_date).getFullYear()}
+            </span>
+          ) : null}
+          {resumeEntry?.timestamp ? (
+            <Badge variant="secondary">
+              Resume from {formatTimeLabel(resumeEntry.timestamp)}
+            </Badge>
+          ) : null}
+        </div>
+
+        {selectedMovie.overview ? (
+          <p className="max-w-3xl text-muted-foreground">
+            {selectedMovie.overview}
+          </p>
+        ) : null}
+      </div>
+
+      {error ? (
+        <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-6 text-center text-destructive">
+          {error}
+        </div>
+      ) : loading ? (
+        <div className="rounded-lg border border-border/60 bg-muted/10 p-6">
+          Loading trailer...
+        </div>
+      ) : (
+        <YoutubeVideo videoKey={videoKey} movie={selectedMovie} />
+      )}
+    </div>
+  );
+};
+
+MovieSummary.propTypes = {
+  selectedMovie: PropTypes.shape({
+    id: PropTypes.number,
+    title: PropTypes.string,
+    original_title: PropTypes.string,
+    overview: PropTypes.string,
+    vote_average: PropTypes.number,
+    release_date: PropTypes.string,
+    poster_path: PropTypes.string,
+    backdrop_path: PropTypes.string,
+  }),
+};
+
+MovieSummary.defaultProps = {
+  selectedMovie: null,
+};
 
 export default MovieSummary;
