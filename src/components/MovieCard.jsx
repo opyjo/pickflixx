@@ -13,6 +13,8 @@ import {
 import PropTypes from "prop-types";
 import { Button } from "./ui/button";
 import { GlobalContext } from "../context/GlobalState";
+import useWatchProviders from "../hooks/useWatchProviders";
+import StreamingBadges from "./StreamingBadges";
 
 const IMGPATH = "https://image.tmdb.org/t/p/w500";
 const PLACEHOLDER_IMAGE =
@@ -29,6 +31,7 @@ const MovieCard = ({ movie, type }) => {
   const { fetchMovieDetails, watchListNotes, watchList, watched, collections } =
     useContext(GlobalContext);
   const [imageError, setImageError] = useState(false);
+  const { streamingProviders } = useWatchProviders(movie.id);
 
   const existingNote = watchListNotes?.[movie.id];
   const isInWatchlist = watchList.some((m) => m.id === movie.id);
@@ -158,6 +161,13 @@ const MovieCard = ({ movie, type }) => {
                 +{movieCollections.length - 2} more
               </Badge>
             )}
+          </div>
+        )}
+
+        {/* Streaming Availability */}
+        {streamingProviders.length > 0 && (
+          <div className="mb-2">
+            <StreamingBadges providers={streamingProviders} maxDisplay={3} />
           </div>
         )}
 

@@ -5,11 +5,14 @@ import { Card, CardContent, CardFooter, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Play, Plus, Check, Star } from "lucide-react";
+import useWatchProviders from "../hooks/useWatchProviders";
+import StreamingBadges from "./StreamingBadges";
 
 const IMGPATH = "https://image.tmdb.org/t/p/w500";
 
 const MovieDisplayCard = ({ movie, onMovieSelect }) => {
   const navigate = useNavigate();
+  const { streamingProviders } = useWatchProviders(movie.id);
 
   const {
     addMovieToWatchList,
@@ -60,13 +63,20 @@ const MovieDisplayCard = ({ movie, onMovieSelect }) => {
         <CardTitle className="text-base line-clamp-2 mb-2">
           {movie.original_title}
         </CardTitle>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
           {movie.release_date && (
             <Badge variant="outline" className="text-xs">
               {new Date(movie.release_date).getFullYear()}
             </Badge>
           )}
         </div>
+        
+        {/* Streaming Availability */}
+        {streamingProviders.length > 0 && (
+          <div className="mb-2">
+            <StreamingBadges providers={streamingProviders} maxDisplay={2} />
+          </div>
+        )}
       </CardContent>
 
       <CardFooter className="flex flex-col gap-2 p-4 pt-0">

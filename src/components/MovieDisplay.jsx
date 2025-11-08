@@ -132,6 +132,11 @@ const MovieDisplay = ({ onMovieSelect }) => {
           params["vote_average.gte"] = debouncedFilters.rating;
         }
 
+        if (debouncedFilters.streamingServices?.length > 0) {
+          params.with_watch_providers = debouncedFilters.streamingServices.join("|");
+          params.watch_region = "US";
+        }
+
         const response = await axios.get(`${TMDB_API_BASE_URL}/discover/movie`, {
           params,
         });
@@ -202,10 +207,14 @@ const MovieDisplay = ({ onMovieSelect }) => {
   const isEmptyState = !loading && !error && renderedList.length === 0;
 
   const hasActiveFilters =
-    filters.genres.length > 0 || filters.rating > 0;
+    filters.genres.length > 0 || 
+    filters.rating > 0 || 
+    (filters.streamingServices?.length > 0);
 
   const activeFiltersCount =
-    filters.genres.length + (filters.rating > 0 ? 1 : 0);
+    filters.genres.length + 
+    (filters.rating > 0 ? 1 : 0) + 
+    (filters.streamingServices?.length || 0);
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-screen-2xl">

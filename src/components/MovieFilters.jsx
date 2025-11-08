@@ -4,6 +4,8 @@ import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Badge } from "./ui/badge";
+import { Tv } from "lucide-react";
+import { POPULAR_STREAMING_SERVICES } from "../constants/movieFilters";
 
 const MovieFilters = ({
   genres,
@@ -59,12 +61,27 @@ const MovieFilters = ({
     onChange({ ...filters, rating: clampedValue });
   };
 
+  const handleStreamingToggle = (serviceId) => {
+    if (disabled) {
+      return;
+    }
+
+    const isSelected = filters.streamingServices?.includes(serviceId) || false;
+    const updatedServices = isSelected
+      ? filters.streamingServices.filter((id) => id !== serviceId)
+      : [...(filters.streamingServices || []), serviceId];
+    onChange({ ...filters, streamingServices: updatedServices });
+  };
+
   const hasActiveFilters = hideYearFilter
-    ? filters.genres.length > 0 || filters.rating > baselineRating
+    ? filters.genres.length > 0 || 
+      filters.rating > baselineRating || 
+      (filters.streamingServices?.length > 0)
     : filters.genres.length > 0 ||
       filters.yearRange[0] !== baselineYearRange[0] ||
       filters.yearRange[1] !== baselineYearRange[1] ||
-      filters.rating > baselineRating;
+      filters.rating > baselineRating ||
+      (filters.streamingServices?.length > 0);
 
   return (
     <div className="mb-8 rounded-2xl border border-border/60 bg-card/60 p-4 shadow-sm backdrop-blur">
@@ -188,6 +205,33 @@ const MovieFilters = ({
           </div>
         )}
 
+        <div>
+          <Label className="mb-2 flex items-center gap-2 text-xs uppercase tracking-wide text-muted-foreground">
+            <Tv className="h-4 w-4" />
+            Streaming Services
+          </Label>
+          <p className="mb-3 text-xs text-muted-foreground">
+            Filter by availability on streaming platforms (US only)
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {POPULAR_STREAMING_SERVICES.map((service) => {
+              const isActive = filters.streamingServices?.includes(service.id) || false;
+              return (
+                <Button
+                  key={service.id}
+                  variant={isActive ? "secondary" : "outline"}
+                  size="sm"
+                  onClick={() => handleStreamingToggle(service.id)}
+                  className="rounded-full px-4"
+                  disabled={disabled}
+                >
+                  {service.shortName}
+                </Button>
+              );
+            })}
+          </div>
+        </div>
+
         {hasActiveFilters && (
           <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
             {filters.genres.length > 0 && (
@@ -203,6 +247,11 @@ const MovieFilters = ({
             {filters.rating > 0 && (
               <Badge variant="outline">
                 Min rating: {filters.rating.toFixed(1)}
+              </Badge>
+            )}
+            {filters.streamingServices?.length > 0 && (
+              <Badge variant="outline">
+                Streaming: {filters.streamingServices.length} selected
               </Badge>
             )}
           </div>
@@ -223,6 +272,7 @@ MovieFilters.propTypes = {
     genres: PropTypes.arrayOf(PropTypes.number),
     yearRange: PropTypes.arrayOf(PropTypes.number),
     rating: PropTypes.number,
+    streamingServices: PropTypes.arrayOf(PropTypes.number),
   }).isRequired,
   onChange: PropTypes.func.isRequired,
   onReset: PropTypes.func.isRequired,
@@ -231,6 +281,7 @@ MovieFilters.propTypes = {
     genres: PropTypes.arrayOf(PropTypes.number),
     yearRange: PropTypes.arrayOf(PropTypes.number),
     rating: PropTypes.number,
+    streamingServices: PropTypes.arrayOf(PropTypes.number),
   }),
   hideYearFilter: PropTypes.bool,
 };

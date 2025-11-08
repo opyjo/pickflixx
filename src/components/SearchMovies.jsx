@@ -118,7 +118,8 @@ const SearchMovies = ({ onMovieSelect }) => {
     filters.genres.length > 0 ||
     filters.rating > 0 ||
     filters.yearRange[0] !== MOVIE_FILTER_DEFAULTS.yearRange[0] ||
-    filters.yearRange[1] !== MOVIE_FILTER_DEFAULTS.yearRange[1];
+    filters.yearRange[1] !== MOVIE_FILTER_DEFAULTS.yearRange[1] ||
+    (filters.streamingServices?.length > 0);
 
   const activeFiltersCount =
     filters.genres.length +
@@ -126,7 +127,8 @@ const SearchMovies = ({ onMovieSelect }) => {
     (filters.yearRange[0] !== MOVIE_FILTER_DEFAULTS.yearRange[0] ||
     filters.yearRange[1] !== MOVIE_FILTER_DEFAULTS.yearRange[1]
       ? 1
-      : 0);
+      : 0) +
+    (filters.streamingServices?.length || 0);
 
   const renderedList = useMemo(
     () =>
