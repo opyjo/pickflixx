@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import MovieDisplayCard from "./MovieDisplayCard";
-import { Film, TrendingUp, Play, Trash2, Filter, X } from "lucide-react";
+import { Film, TrendingUp, Play, Trash2, Filter, X, ChevronDown, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
@@ -99,9 +99,13 @@ const ContinueWatchingCard = ({ entry, onResume, onDismiss }) => {
 const MovieDisplay = ({ onMovieSelect }) => {
   const [movieList, setMovieList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState(MOVIE_FILTER_DEFAULTS);
   const [showFilters, setShowFilters] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalResults, setTotalResults] = useState(0);
 
   const debouncedFilters = useDebouncedValue(filters, 400);
   const { genres } = useMovieGenres();
@@ -113,6 +117,7 @@ const MovieDisplay = ({ onMovieSelect }) => {
     const fetchMovies = async () => {
       setLoading(true);
       setError(null);
+      setCurrentPage(1);
 
       try {
         const params = {
@@ -143,6 +148,8 @@ const MovieDisplay = ({ onMovieSelect }) => {
 
         if (!isCancelled) {
           setMovieList(response.data.results ?? []);
+          setTotalPages(response.data.total_pages ?? 1);
+          setTotalResults(response.data.total_results ?? 0);
         }
       } catch (fetchError) {
         if (!isCancelled) {
@@ -172,6 +179,55 @@ const MovieDisplay = ({ onMovieSelect }) => {
 
   const handleResetFilters = () => {
     setFilters({ ...MOVIE_FILTER_DEFAULTS });
+  };
+
+  const handleLoadMore = async () => {
+    if (loadingMore || currentPage >= totalPages) {
+      return;
+    }
+
+    setLoadingMore(true);
+    setError(null);
+
+    try {
+      const nextPage = currentPage + 1;
+      const params = {
+        sort_by: "primary_release_date.desc",
+        api_key: TMDB_API_KEY,
+        "primary_release_date.gte": `${debouncedFilters.yearRange[0]}-01-01`,
+        "primary_release_date.lte": `${debouncedFilters.yearRange[1]}-12-31`,
+        page: nextPage,
+        "vote_count.gte": 20,
+      };
+
+      if (debouncedFilters.genres.length > 0) {
+        params.with_genres = debouncedFilters.genres.join(",");
+      }
+
+      if (debouncedFilters.rating > 0) {
+        params["vote_average.gte"] = debouncedFilters.rating;
+      }
+
+      if (debouncedFilters.streamingServices?.length > 0) {
+        params.with_watch_providers = debouncedFilters.streamingServices.join("|");
+        params.watch_region = "US";
+      }
+
+      const response = await axios.get(`${TMDB_API_BASE_URL}/discover/movie`, {
+        params,
+      });
+
+      setMovieList((prevList) => [...prevList, ...(response.data.results ?? [])]);
+      setCurrentPage(nextPage);
+    } catch (fetchError) {
+      setError(
+        fetchError?.response?.data?.status_message ??
+          fetchError?.message ??
+          "Unable to load more movies."
+      );
+    } finally {
+      setLoadingMore(false);
+    }
   };
 
   const continueWatchingEntries = useMemo(() => {
@@ -248,9 +304,17 @@ const MovieDisplay = ({ onMovieSelect }) => {
             )}
           </Button>
         </div>
-        <p className="text-muted-foreground">
-          Discover the newest movies recently released
-        </p>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <span>Discover the newest movies recently released</span>
+          {!loading && totalResults > 0 && (
+            <>
+              <span>•</span>
+              <span className="font-medium">
+                Showing {movieList.filter((m) => m.poster_path).length} of {totalResults.toLocaleString()}+ movies
+              </span>
+            </>
+          )}
+        </div>
       </div>
 
       {continueWatchingEntries.length > 0 && (
@@ -311,9 +375,54 @@ const MovieDisplay = ({ onMovieSelect }) => {
           <p>No movies match your filters. Try adjusting them.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {renderedList}
-        </div>
+        <>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            {renderedList}
+          </div>
+
+          {/* Load More Button */}
+          {currentPage < totalPages && !loading && (
+            <div className="mt-12 flex flex-col items-center gap-4">
+              <Button
+                onClick={handleLoadMore}
+                disabled={loadingMore}
+                size="lg"
+                variant="outline"
+                className="group min-w-[200px] border-2 hover:border-primary hover:bg-primary/5"
+              >
+                {loadingMore ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Loading...
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown className="mr-2 h-5 w-5 transition-transform group-hover:translate-y-1" />
+                    Load More Movies
+                  </>
+                )}
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                Page {currentPage} of {totalPages} • {totalResults.toLocaleString()} total results
+              </p>
+            </div>
+          )}
+
+          {/* All Loaded Message */}
+          {currentPage >= totalPages && movieList.length > 0 && (
+            <div className="mt-12 flex flex-col items-center gap-2 text-center">
+              <div className="rounded-full bg-muted p-3">
+                <Film className="h-6 w-6 text-muted-foreground" />
+              </div>
+              <p className="text-sm font-medium text-muted-foreground">
+                You've reached the end!
+              </p>
+              <p className="text-xs text-muted-foreground">
+                All {movieList.filter((m) => m.poster_path).length} movies loaded
+              </p>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

@@ -12,7 +12,7 @@ import { GlobalContext } from "../context/GlobalState";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Skeleton } from "./ui/skeleton";
-import { Calendar, Clock, Users, Play } from "lucide-react";
+import { Calendar, Clock, Users, Play, X } from "lucide-react";
 import { buildPosterUrl } from "../lib/tmdb";
 
 const MovieDetailsSheet = ({ onWatchTrailer }) => {
@@ -133,11 +133,11 @@ const MovieDetailsSheet = ({ onWatchTrailer }) => {
       <div className="relative ml-auto flex h-full w-full max-w-2xl flex-col bg-background shadow-xl">
         <button
           type="button"
-          className="absolute right-4 top-4 rounded-md bg-background/80 p-2 text-muted-foreground transition hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="absolute right-4 top-4 z-10 rounded-full bg-background/95 p-3 shadow-lg text-foreground transition hover:bg-accent hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           onClick={closeMovieDetails}
           aria-label="Close details"
         >
-          ×
+          <X className="h-5 w-5" />
         </button>
         <div className="relative h-60 w-full overflow-hidden bg-muted">
           {isLoading ? (
@@ -249,18 +249,19 @@ const MovieDetailsSheet = ({ onWatchTrailer }) => {
           ) : null}
         </div>
 
-        <div className="flex items-center gap-3 border-t border-border/60 bg-background/95 p-4">
+        <div className="flex flex-col gap-2 border-t border-border/60 bg-background/95 p-4 sm:flex-row">
           <Button
             className="flex-1"
             onClick={handleWatchTrailer}
             disabled={!movie}
           >
-            <Play className="h-4 w-4" />
+            <Play className="mr-2 h-4 w-4" />
             Watch trailer
           </Button>
           {trailerKey && (
             <Button
-              variant="ghost"
+              variant="outline"
+              className="hidden sm:flex"
               onClick={() => {
                 if (!trailerKey) {
                   return;
@@ -277,6 +278,14 @@ const MovieDetailsSheet = ({ onWatchTrailer }) => {
               Open in YouTube
             </Button>
           )}
+          <Button
+            variant="outline"
+            onClick={closeMovieDetails}
+            className="sm:hidden"
+          >
+            <X className="mr-2 h-4 w-4" />
+            Close
+          </Button>
         </div>
       </div>
     </div>
