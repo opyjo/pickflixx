@@ -1,6 +1,7 @@
 import React, { useContext, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { GlobalContext } from "../context/GlobalState";
+import { useTheme } from "../context/ThemeContext";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import {
@@ -14,10 +15,13 @@ import {
   Menu,
   X,
   TrendingUp,
+  Moon,
+  Sun,
 } from "lucide-react";
 
 const Header = () => {
   const { watchList, watched, collections } = useContext(GlobalContext);
+  const { theme, toggleTheme } = useTheme();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -74,7 +78,7 @@ const Header = () => {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-white/95 backdrop-blur-md shadow-sm">
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur-md shadow-sm">
       <div className="container flex h-16 max-w-screen-2xl items-center justify-between px-4 sm:px-8">
         <Link to="/dashboard" className="flex items-center space-x-2 group">
           <div className="rounded-lg bg-gradient-to-br from-primary to-blue-600 p-1.5 transition-transform group-hover:scale-110">
@@ -114,10 +118,42 @@ const Header = () => {
               </Link>
             );
           })}
+
+          {/* Theme Toggle Button - Desktop */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            aria-label={`Switch to ${
+              theme === "light" ? "dark" : "light"
+            } mode`}
+            className="ml-2"
+          >
+            {theme === "light" ? (
+              <Moon className="h-5 w-5" />
+            ) : (
+              <Sun className="h-5 w-5" />
+            )}
+          </Button>
         </nav>
 
         {/* Mobile Navigation */}
         <div className="flex lg:hidden items-center gap-2">
+          {/* Theme Toggle Button - Mobile */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            aria-label={`Switch to ${
+              theme === "light" ? "dark" : "light"
+            } mode`}
+          >
+            {theme === "light" ? (
+              <Moon className="h-5 w-5" />
+            ) : (
+              <Sun className="h-5 w-5" />
+            )}
+          </Button>
           <Button
             variant="ghost"
             size="sm"
@@ -135,7 +171,7 @@ const Header = () => {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-border bg-white/95 backdrop-blur-md shadow-lg">
+        <div className="lg:hidden border-t border-border bg-background/95 backdrop-blur-md shadow-lg">
           <nav className="container flex flex-col gap-1 p-4">
             {navLinks.map((link) => {
               const Icon = link.icon;

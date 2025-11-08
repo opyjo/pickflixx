@@ -13,6 +13,7 @@ import Dashboard from "./components/Dashboard";
 import "./App.css";
 import SearchMovies from "./components/SearchMovies";
 import { GlobalProvider } from "./context/GlobalState";
+import { ThemeProvider } from "./context/ThemeContext";
 import MovieDetailsSheet from "./components/MovieDetailsSheet";
 
 const App = () => {
@@ -23,37 +24,39 @@ const App = () => {
   };
 
   return (
-    <GlobalProvider>
-      <Router >
-        <Header />
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <MovieDisplay
-                onMovieSelect={onMovieSelect}
-                selectedMovie={selectedMovie}
-              />
-            }
-          />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route
-            path="/search"
-            element={<SearchMovies onMovieSelect={onMovieSelect} />}
-          />
-          <Route path="/watchlist" element={<WatchList />} />
-          <Route path="/watched" element={<Watched />} />
-          <Route path="/statistics" element={<Statistics />} />
-          <Route path="/collections" element={<Collections />} />
-          <Route path="/recommendations" element={<Recommendations />} />
-          <Route
-            path="/summary"
-            element={<MovieSummary selectedMovie={selectedMovie} />}
-          />
-        </Routes>
-        <MovieDetailsSheet onWatchTrailer={onMovieSelect} />
-      </Router>
-    </GlobalProvider>
+    <ThemeProvider>
+      <GlobalProvider>
+        <Router >
+          <Header />
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <MovieDisplay
+                  onMovieSelect={onMovieSelect}
+                  selectedMovie={selectedMovie}
+                />
+              }
+            />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route
+              path="/search"
+              element={<SearchMovies onMovieSelect={onMovieSelect} />}
+            />
+            <Route path="/watchlist" element={<WatchList />} />
+            <Route path="/watched" element={<Watched />} />
+            <Route path="/statistics" element={<Statistics />} />
+            <Route path="/collections" element={<Collections />} />
+            <Route path="/recommendations" element={<Recommendations />} />
+            <Route
+              path="/summary"
+              element={<MovieSummary selectedMovie={selectedMovie} />}
+            />
+          </Routes>
+          <MovieDetailsSheet onWatchTrailer={onMovieSelect} />
+        </Router>
+      </GlobalProvider>
+    </ThemeProvider>
   );
 };
 
