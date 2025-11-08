@@ -47,3 +47,4 @@ const useMovieGenres = () => {
 
 export default useMovieGenres;
 
+

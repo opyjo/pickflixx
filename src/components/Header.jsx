@@ -80,10 +80,7 @@ const Header = () => {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur-md shadow-sm">
       <div className="container flex h-16 max-w-screen-2xl items-center justify-between px-4 sm:px-8">
-        <Link to="/dashboard" className="flex items-center space-x-2 group">
-          <div className="rounded-lg bg-gradient-to-br from-primary to-blue-600 p-1.5 transition-transform group-hover:scale-110">
-            <Film className="h-5 w-5 text-white" />
-          </div>
+        <Link to="/" className="flex items-center group">
           <span className="font-bold text-xl bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
             PickFlixx
           </span>

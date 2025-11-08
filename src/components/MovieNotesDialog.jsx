@@ -179,3 +179,4 @@ MovieNotesDialog.defaultProps = {
 
 export default MovieNotesDialog;
 
+
