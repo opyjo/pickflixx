@@ -1,6 +1,6 @@
 //Context API is designed to share data that can be considered "global" for a tree of React components;
-import React, { createContext, useReducer, useEffect } from "react";
-
+import React, { createContext, useReducer, useEffect, useMemo } from "react";
+import PropTypes from "prop-types";
 import AppReducer from "./AppReducer";
 
 // code sets up the initial for the context API.
@@ -52,20 +52,27 @@ export const GlobalProvider = (props) => {
     dispatch({ type: "REMOVE_FROM_WATCHED", payload: id });
   };
 
+  const contextValue = useMemo(
+    () => ({
+      watchList: state.watchList,
+      watched: state.watched,
+      movieVideo: state.movieVideo,
+      addMovieToWatchList,
+      addMovieToWatched,
+      removeMovieFromWatchList,
+      moveToWatchList,
+      removeFromWatched,
+    }),
+    [state.watchList, state.watched, state.movieVideo]
+  );
+
   return (
-    <GlobalContext.Provider
-      value={{
-        watchList: state.watchList,
-        watched: state.watched,
-        movieVideo: state.movieVideo,
-        addMovieToWatchList,
-        addMovieToWatched,
-        removeMovieFromWatchList,
-        moveToWatchList,
-        removeFromWatched,
-      }}
-    >
+    <GlobalContext.Provider value={contextValue}>
       {props.children}
     </GlobalContext.Provider>
   );
+};
+
+GlobalProvider.propTypes = {
+  children: PropTypes.node.isRequired,
 };

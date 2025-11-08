@@ -1,33 +1,27 @@
 import React, { useContext } from "react";
-import { Image } from "./styles/Image.styled";
-import { Card } from "./styles/Card.styled";
-import { StyledButton } from "./styles/StyledButton.styled";
-import { Flex } from "./styles/Global.styled";
 import { useNavigate } from "react-router-dom";
-import { IoIosAdd } from "react-icons/io";
 import { GlobalContext } from "../context/GlobalState";
-import { GiPlayButton } from "react-icons/gi";
+import { Card, CardContent, CardFooter, CardTitle } from "./ui/card";
+import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
+import { Play, Plus, Check, Star } from "lucide-react";
+
 const IMGPATH = "https://image.tmdb.org/t/p/w1280";
 
-function MovieDisplayCard({ movie, onMovieSelect }) {
-  // navigating on clicking the "watch Trailer button".
+const MovieDisplayCard = ({ movie, onMovieSelect }) => {
   const navigate = useNavigate();
 
-  // function call passes the movie data to the App component parent so that the MovieSummary component can use the data.
-  const onSelectMovie = () => {
+  const handleSelectMovie = () => {
     onMovieSelect(movie);
     navigate("/summary");
   };
 
-  // connecting the component to the Context API.
   const { addMovieToWatchList, addMovieToWatched, watchList, watched } =
     useContext(GlobalContext);
 
-  // Code to avoid adding duplicate movie to the movielist by checking for the moveid in the watchlist
-  let storedMovie = watchList.find((element) => element.id === movie.id);
-  let storedMovieWatched = watched.find((mov) => mov.id === movie.id);
+  const storedMovie = watchList.find((element) => element.id === movie.id);
+  const storedMovieWatched = watched.find((mov) => mov.id === movie.id);
 
-  // code to disabled the watched and watchlist button once the movie has already been selected.
   const watchListDisabled = storedMovie
     ? true
     : storedMovieWatched
@@ -36,38 +30,78 @@ function MovieDisplayCard({ movie, onMovieSelect }) {
   const watchedDisabled = storedMovieWatched ? true : false;
 
   return (
-    <Card>
-      <Image src={IMGPATH + movie.poster_path} alt="" />
-      <div>
-        <h3>{movie.original_title}</h3>
+    <Card className="group overflow-hidden">
+      <div className="relative overflow-hidden">
+        <img
+          src={IMGPATH + movie.poster_path}
+          alt={movie.original_title}
+          className="w-full h-[300px] object-cover transition-transform duration-300 group-hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="absolute top-2 right-2 flex items-center gap-1 bg-black/70 backdrop-blur-sm px-2 py-1 rounded-md">
+          <Star className="h-3 w-3 fill-yellow-500 text-yellow-500" />
+          <span className="text-xs font-semibold text-white">
+            {movie.vote_average?.toFixed(1) || "N/A"}
+          </span>
+        </div>
       </div>
-      <div>
-        {/* button adds the movie to the store as an action(function) */}
-        <StyledButton mgLeft="30%" bg="#800000" onClick={onSelectMovie}>
-          <GiPlayButton />
-          WATCH TRAILER
-        </StyledButton>
-        <Flex justifyContent="space-around">
-          <StyledButton
-            bg="#001242"
+
+      <CardContent className="p-4">
+        <CardTitle className="text-base line-clamp-2 mb-2">
+          {movie.original_title}
+        </CardTitle>
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          {movie.release_date && (
+            <Badge variant="outline" className="text-xs">
+              {new Date(movie.release_date).getFullYear()}
+            </Badge>
+          )}
+        </div>
+      </CardContent>
+
+      <CardFooter className="flex flex-col gap-2 p-4 pt-0">
+        <Button
+          className="w-full"
+          onClick={handleSelectMovie}
+          size="sm"
+        >
+          <Play className="h-4 w-4" />
+          Watch Trailer
+        </Button>
+
+        <div className="flex gap-2 w-full">
+          <Button
+            variant="outline"
+            className="flex-1"
             onClick={() => addMovieToWatchList(movie)}
             disabled={watchListDisabled}
+            size="sm"
           >
-            <IoIosAdd />
-            WATCHLIST
-          </StyledButton>
-          <StyledButton
-            bg="#001242"
+            {storedMovie ? (
+              <Check className="h-4 w-4" />
+            ) : (
+              <Plus className="h-4 w-4" />
+            )}
+            Watchlist
+          </Button>
+          <Button
+            variant="outline"
+            className="flex-1"
             onClick={() => addMovieToWatched(movie)}
             disabled={watchedDisabled}
+            size="sm"
           >
-            <IoIosAdd />
-            WATCHED
-          </StyledButton>
-        </Flex>
-      </div>
+            {storedMovieWatched ? (
+              <Check className="h-4 w-4" />
+            ) : (
+              <Plus className="h-4 w-4" />
+            )}
+            Watched
+          </Button>
+        </div>
+      </CardFooter>
     </Card>
   );
-}
+};
 
 export default MovieDisplayCard;

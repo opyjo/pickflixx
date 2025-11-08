@@ -1,10 +1,9 @@
 import React, { useContext } from "react";
-import { IoIosAdd } from "react-icons/io";
 import { GlobalContext } from "../context/GlobalState";
-import { StyledButton } from "./styles/StyledButton.styled";
-import { Flex } from "./styles/Global.styled";
+import { Button } from "./ui/button";
+import { Trash2, Check, Clock } from "lucide-react";
 
-function MovieControls({ movie, type }) {
+const MovieControls = ({ movie, type }) => {
   const {
     removeMovieFromWatchList,
     addMovieToWatched,
@@ -13,50 +12,54 @@ function MovieControls({ movie, type }) {
   } = useContext(GlobalContext);
 
   return (
-    <div>
+    <div className="flex gap-2 w-full">
       {type === "watchList" && (
-        <Flex justifyContent="space-around">
-          <StyledButton
-            bg="#7395ae"
-            onClick={() => removeMovieFromWatchList(movie.id)}
-            className="btn"
-          >
-            <IoIosAdd />
-            REMOVE
-          </StyledButton>
-          <StyledButton
-            bg="#7395ae"
+        <>
+          <Button
+            variant="outline"
+            className="flex-1"
             onClick={() => addMovieToWatched(movie)}
-            className="btn"
+            size="sm"
           >
-            <IoIosAdd />
-            WATCHED
-          </StyledButton>
-        </Flex>
+            <Check className="h-4 w-4" />
+            Watched
+          </Button>
+          <Button
+            variant="destructive"
+            className="flex-1"
+            onClick={() => removeMovieFromWatchList(movie.id)}
+            size="sm"
+          >
+            <Trash2 className="h-4 w-4" />
+            Remove
+          </Button>
+        </>
       )}
 
       {type === "watched" && (
-        <Flex justifyContent="space-around">
-          <StyledButton
-            bg="#7395ae"
+        <>
+          <Button
+            variant="outline"
+            className="flex-1"
             onClick={() => moveToWatchList(movie)}
-            className="btn"
+            size="sm"
           >
-            <IoIosAdd />
-            WATCHLIST
-          </StyledButton>
-          <StyledButton
-            bg="#7395ae"
+            <Clock className="h-4 w-4" />
+            Watchlist
+          </Button>
+          <Button
+            variant="destructive"
+            className="flex-1"
             onClick={() => removeFromWatched(movie.id)}
-            className="btn"
+            size="sm"
           >
-            <IoIosAdd />
-            REMOVE
-          </StyledButton>
-        </Flex>
+            <Trash2 className="h-4 w-4" />
+            Remove
+          </Button>
+        </>
       )}
     </div>
   );
-}
+};
 
 export default MovieControls;
