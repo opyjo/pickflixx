@@ -20,7 +20,7 @@ export const fetchWatchProviders = async (movieId) => {
         },
       }
     );
-    
+
     // Return US providers (can be changed to other regions)
     return response.data.results?.US || null;
   } catch (error) {
@@ -43,4 +43,3 @@ export const STREAMING_SERVICES = {
   283: { name: "Crunchyroll", logo: "🄲", color: "bg-orange-500" },
   1899: { name: "Max", logo: "🅼", color: "bg-purple-600" },
 };
-
